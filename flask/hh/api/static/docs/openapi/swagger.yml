@@ -1,0 +1,882 @@
+openapi: 3.0.3
+info:
+  title: 'hh'
+  description: 'Базовый аналог hh'
+  version: 1.0.0
+servers:
+  - url: 'http://127.0.0.1:5000/api/v1/'
+tags:
+  - name: Jwt
+    description: 'Операции, связанными с jwt'
+  - name: User
+    description: 'Операции, связанными с пользователем'
+  - name: Company
+    description: 'Операции, связанными с компанией'
+#  - name: Vacancy
+#    description: 'Операции, связанными с вакансиями'
+  - name: Role
+    description: 'Операции, связанными с ролями'
+  - name: Skills
+    description: 'Операции, связанными с навыками'
+
+paths:
+  /user:
+    post:
+      tags:
+        - User
+      summary: 'Создание пользователя'
+      description: 'Отправляем запрос для создания нового пользователя'
+      operationId: saveUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#components/schemas/UserCreate"
+      responses:
+        201:
+          description: 'Пользователь успешно создан'
+    get:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - User
+      summary: 'Получаем пользователя'
+      description: 'Отправляем запрос для получения пользователя'
+      operationId: getUser
+      responses:
+        '200':
+          description: 'Получение пользователя'
+          content:
+            application/json:
+              schema:
+                $ref: "#components/schemas/UserDetail"
+  /user/role:
+    post:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - User
+      summary: 'Устанавливаем роли доступа для пользователя'
+      description: 'Отправляем запрос для записи роли'
+      operationId: SaveUserRoles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                roles:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        '201':
+          description: 'Роли успешно добавлены'
+  /user/resumes:
+    get:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - User
+      summary: 'Список всех резюме'
+      description: 'Получаем список резюме созданным пользователем'
+      operationId: getUserResumes
+      responses:
+        '200':
+          description: 'Список резюме'
+          content:
+            application/json:
+              schema:
+                $ref: "#components/schemas/UserResumes"
+    post:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - User
+      summary: 'Создание резюме'
+      description: 'Отправляем запрос для создания нового резюме'
+      operationId: SaveUserResumes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#components/schemas/UserResumeSave"
+      responses:
+        '201':
+          description: 'Резюме создано'
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                  salary:
+                    type: integer
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  publication_date:
+                    type: string
+                    format: date-time
+  /user/resumes/{resumesId}:
+    get:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - User
+      summary: 'Информация о резюме'
+      description: 'Получить информацию о выбранном резюме пользователя'
+      operationId: getUserResumesDetail
+      parameters:
+        - name: resumesId
+          description: 'Идентификатор резюме'
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Сведения о резюме'
+          content:
+            application/json:
+              schema:
+                $ref: "#components/schemas/UserResumeDetail"
+    put:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - User
+      summary: 'Обновить о резюме'
+      description: 'Обновить резюме данного пользователя'
+      operationId: putUserResumesDetail
+      parameters:
+        - name: resumesId
+          description: 'Идентификатор резюме'
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#components/schemas/UserResumeSave"
+      responses:
+        '200':
+          description: 'Сведения о резюме'
+          content:
+            application/json:
+              schema:
+                $ref: "#components/schemas/UserResumeSave"
+    delete:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - User
+      summary: 'Удалить резюме'
+      description: 'Удалить выбранное резюме'
+      operationId: deleteUserResumesDetail
+      parameters:
+        - name: resumesId
+          description: 'Идентификатор резюме'
+          in: path
+          required: true
+      responses:
+        '200':
+          description: 'Резюме удален'
+        '204':
+          description: 'Резюме для удоления не найдена'
+  /search/vacancy:
+    get:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - User
+      summary: 'Список всех вакансий'
+      description: 'Получаем список всех вакансий'
+      operationId: getVacancyAll
+      responses:
+        '200':
+          description: 'Получение пользователя'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: integer
+                    description:
+                      type: string
+  /answer/vacancy:
+    post:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - User
+      summary: 'Создание отклика'
+      description: 'Отправляем запрос для создания отклика на вакансию'
+      operationId: postAnswerVacancy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                user_resume:
+                  type: integer
+                vacancy:
+                  type: integer
+        description: 'user_resume - Идентификатор резюме пользователя | vacancy - Идентификатор вакансии'
+      responses:
+        '201':
+          description: 'Отклик отправлен'
+        '200':
+          description: 'Вы уже откликнулись'
+
+
+
+
+  /jwt/create:
+    post:
+      tags:
+        - Jwt
+      summary: 'Создание токена'
+      description: 'Отправляем запрос для создания токена jwt'
+      operationId: CreateJwt
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: 'Получение jwt токена'
+  /jwt/refresh:
+    post:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - Jwt
+      summary: 'Обновление токена'
+      description: 'Отправляем запрос для обновления токена jwt'
+      operationId: RefreshJwt
+      responses:
+        '200':
+          description: 'Получение нового jwt токена'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+  /role:
+    get:
+      tags:
+        - Role
+      summary: 'Список всех ролей'
+      description: 'Получаем список ролей'
+      operationId: getRoles
+      responses:
+        "200":
+          description: 'Список ролей'
+          content:
+            application/json:
+              schema:
+                $ref: "#components/schemas/Role"
+    post:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - Role
+      summary: 'Создание роли'
+      description: 'Отправляем запрос для создания новой роли'
+      operationId: saveRole
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#components/schemas/RoleDetail"
+      responses:
+        '201':
+          description: 'Роль успешна создана'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+        '400':
+          description: 'Ошибка в создание роли'
+  /role/{roleId} :
+    get:
+      tags:
+        - Role
+      summary: 'Информация о роли'
+      description: 'Получить информацию о выбранной роли'
+      operationId: getRole
+      parameters:
+        - name: roleId
+          description: 'Идентификатор роли'
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: 'Сведения о роли'
+          content:
+            application/json:
+              schema:
+                $ref: "#components/schemas/RoleDetail"
+        204:
+          description: 'Роль с таким идентификатором id отсутсвует'
+    put:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - Role
+      summary: 'Обновить роль'
+      description: 'Обновить информацию о выбранной роли'
+      operationId: updateRole
+      parameters:
+        - name: roleId
+          description: 'Идентификатор роли'
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+           application/json:
+             schema:
+               $ref: "#components/schemas/RoleDetail"
+      responses:
+        '200':
+          description: 'Роль успешна обновлена'
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+        '400':
+          description: 'Ошибка в обновлений роли'
+    delete:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - Role
+      summary: 'Удалить роль'
+      description: 'Удалить выбранную роль'
+      operationId: deleteRole
+      parameters:
+        - name: roleId
+          description: 'Идентификатор роли'
+          in: path
+          required: true
+      responses:
+        '200':
+          description: 'Роль удалена'
+        '204':
+          description: 'Роль для удоления не найдена'
+  /skills:
+    get:
+      tags:
+        - Skills
+      summary: 'Список всех навыков'
+      description: 'Получаем список навыков'
+      operationId: getSkills
+      responses:
+        '200':
+          description: 'Список навыков'
+          content:
+            application/json:
+              schema:
+                $ref: "#components/schemas/Skills"
+    post:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - Skills
+      summary: 'Создание навыков'
+      description: 'Отправляем запрос для создания нового навыка'
+      operationId: saveSkill
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#components/schemas/SkillDetail"
+      responses:
+        '201':
+          description: 'Навык успешно создан'
+          content:
+             application/json:
+               schema:
+                 type: object
+                 properties:
+                   id:
+                    type: integer
+                   name:
+                    type: string
+        '400':
+             description: 'Ошибка в создание навыка'
+  /skills/{skillId}:
+    get:
+      tags:
+        - Skills
+      summary: 'Информация о навыке'
+      description: 'Получить информацию о выбранном навыке'
+      operationId: getSkill
+      parameters:
+        - name: skillId
+          description: 'Идентификатор навыка'
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Сведения о навыках'
+          content:
+            application/json:
+              schema:
+                $ref: "#components/schemas/SkillDetail"
+        '204':
+          description: 'Навык с таким идентификатором id отсутсвует'
+    put:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - Skills
+      summary: 'Обновить навык'
+      description: 'Обновить информацию о выбранном навыке'
+      operationId: updateSkill
+      parameters:
+        - name: skillId
+          description: 'Идентификатор навыка'
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#components/schemas/SkillDetail"
+      responses:
+        '200':
+          description: 'Роль успешна обновлена'
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+        '400':
+          description: 'Ошибка в обновление навыка'
+    delete:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - Skills
+      summary: 'Удалить роль'
+      description: 'Удалить выбранную роль'
+      operationId: deleteSkill
+      parameters:
+        - name: skillId
+          description: 'Идентификатор навыка'
+          in: path
+          required: true
+      responses:
+        '200':
+          description: 'Навык удален'
+        '204':
+          description: 'Навык для удоления не найден'
+  /company:
+    get:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - Company
+      summary: 'Компания'
+      description: 'Получаем компанию которую зарегистрировал пользователь'
+      operationId: getСompany
+      responses:
+        "200":
+          description: 'Получаем компанию'
+          content:
+            application/json:
+              schema:
+                $ref: "#components/schemas/CompanyDitail"
+    post:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - Company
+      summary: 'Создание компании'
+      description: 'Отправляем запрос для регистрации компании.Укаждого пользователя может толька быть одна компания.'
+      operationId: SaveСompany
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#components/schemas/CompanySave"
+      responses:
+        '200':
+          description: 'Сведения о компании'
+          content:
+            application/json:
+              schema:
+                $ref: "#components/schemas/CompanySave"
+    put:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - Company
+      summary: 'Обновление компании'
+      description: 'Обновить информацию о выбранной компании'
+      operationId: putСompany
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#components/schemas/CompanySave"
+      responses:
+        '200':
+          description: 'Компания успешна обновлена'
+          content:
+            application/json:
+              schema:
+                $ref: "#components/schemas/CompanySave"
+    delete:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - Company
+      summary: 'Удалить компанию'
+      description: 'Удалить выбранную компанию'
+      operationId: deleteCompany
+      responses:
+        '200':
+          description: 'Роль удалена'
+        '204':
+          description: 'Роль для удоления не найдена'
+  /company/vacancy:
+    get:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - Company
+      summary: 'Список всех вакансий'
+      description: 'Получаем список вакансий'
+      operationId: getСompanyVacancy
+      responses:
+        '200':
+          description: 'Список вакансий'
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  description:
+                    type: string
+
+    post:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - Company
+      summary: 'Создание вакансиий в компании'
+      description: 'Отправляем запрос для создание в компании вакансию'
+      operationId: PostCompanyVacancy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#components/schemas/VacancySave"
+      responses:
+        '201':
+          description: 'Резюме создано'
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  description:
+                    type: string
+  /company/vacancy/{vacancyId}:
+    get:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - Company
+      summary: 'Информация о вакансии'
+      description: 'Получить информацию о выбранной вакансии'
+      operationId: getСompanyVacancyDitail
+      parameters:
+        - name: vacancyId
+          description: 'Идентификатор вакансии'
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Сведениe о вакансии'
+          content:
+            application/json:
+              schema:
+                $ref: "#components/schemas/VacancyDitail"
+        '204':
+          description: 'Вакансия с таким идентификатором id отсутсвует'
+    put:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - Company
+      summary: 'Обновление вакансии'
+      description: 'Обновить информацию о выбранной вакансии'
+      operationId: putСompanyVacancyDitail
+      parameters:
+        - name: vacancyId
+          description: 'Идентификатор вакансии'
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#components/schemas/VacancySave"
+      responses:
+        '200':
+          description: 'Вакансия успешна обновлена'
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  description:
+                    type: string
+    delete:
+      security:
+        - BearerAuth: [ ]
+      tags:
+        - Company
+      summary: 'Удалить вакансию'
+      description: 'Удалить выбранную вакансию'
+      operationId: deleteСompanyVacancyDitail
+      parameters:
+        - name: vacancyId
+          description: 'Идентификатор вакансии'
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Вакансия удалена'
+        '204':
+          description: 'Вакансии для удоления не найдена'
+components:
+  schemas:
+    Role:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+    RoleDetail:
+      type: object
+      properties:
+        name:
+          type: string
+    Skills:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+    SkillDetail:
+      type: object
+      properties:
+        name:
+          type: string
+    Vacancy:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+    VacancyDetail:
+      type: object
+      properties:
+        name:
+          type: string
+    UserCreate:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        phone:
+          type: string
+    UserDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        roles:
+          type: array
+          items:
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+    UserResumes:
+      type: array
+      items:
+        properties:
+          id:
+            type: integer
+          salary:
+            type: integer
+          title:
+            type: string
+          description:
+            type: string
+          publication_date:
+            type: string
+            format: date-time
+
+    UserResumeDetail:
+      type: object
+      properties:
+        salary:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        publication_date:
+          type: string
+          format: date-time
+    UserResumeSave:
+      type: object
+      properties:
+        salary:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+    CompanySave:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        email:
+          type: string
+    CompanyDitail:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        email:
+          type: string
+    VacancySave:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+    VacancyDitail:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: integer
+        description:
+          type: string
+        resumes:
+          type: array
+          items:
+            properties:
+              id:
+                type: integer
+              salary:
+                type: integer
+              title:
+                type: string
+        is_active:
+          type: boolean
+        publication_date:
+          type: string
+          format: date-time
+
+
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
